@@ -28,36 +28,21 @@ app.use('/api/uploads', adminUploadRoutes);
 // app.use('/api/orders', orderRoutes);
 // app.use('/api/upload', uploadRoutes);
 
-// const __dirname = path.resolve(); 
+const __dirname = path.resolve(); 
 // app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
-// if(process.env.NODE_ENV === 'production') {
-//     // app.use(express.static(path.join(__dirname, '/frontend/build')));
-//     app.use('*', (req, res) => 
-//         res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
-//     );
-// } else {
-//     app.get('/', (req, res) => {
-//         res.send("API is running....");
-//     })
-    
-// }
-
-if (process.env.NODE_ENV === 'production') {
-    // Serve static files from the 'frontend/build' directory
-    app.use(express.static(path.join(process.cwd(), 'frontend', 'build')));
-  
-    // Serve the React app for all routes not handled by API
-    app.get('*', (req, res) =>
-      res.sendFile(path.resolve(process.cwd(), 'frontend', 'build', 'index.html'))
+if(process.env.NODE_ENV === 'production') {
+    // app.use(express.static(path.join(__dirname, '/frontend/build')));
+    app.use('*', (req, res) => 
+        res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
     );
-  } else {
-    // In development, just show a message for the root route
+} else {
     app.get('/', (req, res) => {
-      res.send('API is running....');
-    });
-  }
-  
+        res.send("API is running....");
+    })
+    
+}
+
 app.use(notFound);
 app.use(errorHandler);
 app.listen(port, () => console.log(`Server running on port ${port}`))

@@ -31,17 +31,32 @@ app.use('/api/uploads', adminUploadRoutes);
 const __dirname = path.resolve(); 
 // app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
-if(process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '/frontend/build')));
-    app.use('*', (req, res) => 
-        res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
-    );
-} else {
-    app.get('/', (req, res) => {
-        res.send("API is running....");
-    })
+// if(process.env.NODE_ENV === 'production') {
+//     app.use(express.static(path.join(__dirname, '/frontend/build')));
+//     app.use('*', (req, res) => 
+//         res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
+//     );
+// } else {
+//     app.get('/', (req, res) => {
+//         res.send("API is running....");
+//     })
     
-}
+// }
+
+
+if (process.env.NODE_ENV === 'production') {
+    // Serve static files from the 'frontend/build' directory
+    app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+  
+    // Route for handling all non-API requests and serving the React app
+    app.get('*', (req, res) =>
+      res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
+    );
+  } else {
+    app.get('/', (req, res) => {
+      res.send("API is running....");
+    });
+  }
 
 app.use(notFound);
 app.use(errorHandler);

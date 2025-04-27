@@ -10,23 +10,18 @@ import AdminUpload from '../models/uploadModel.js';  // Admin Upload model
 // @access  Private/Admin
 const createUpload = asyncHandler(async (req, res) => {
   const { heading, description, type, image } = req.body;
-
   if (!image) {
     res.status(400);
     throw new Error('Image data is required');
   }
-
   const validTypes = ['team', 'event', 'gallery', 'group'];
   if (!type || !validTypes.includes(type)) {
     res.status(400);
     throw new Error(`Valid type is required. Accepted types are: ${validTypes.join(', ')}`);
   }
-
   const result = await cloudinary.uploader.upload(image, {
     folder: 'uploads/',
   });
-  console.log('Cloudinary upload result:', result);
-
   const upload = await AdminUpload.create({
     heading,
     description,

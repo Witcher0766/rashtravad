@@ -16,14 +16,46 @@ const AdminGroup = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result);  // Base64 preview
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxWidth = 800; // 👈 Resize max width (you can adjust)
+          const maxHeight = 800; // 👈 Resize max height (you can adjust)
+          let width = img.width;
+          let height = img.height;
+  
+          // Maintain aspect ratio
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+  
+          canvas.width = width;
+          canvas.height = height;
+  
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+  
+          // Compress the image
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 👈 Quality 0.7 (you can adjust)
+  
+          setPreview(compressedDataUrl);
+        };
+        img.src = reader.result;
       };
       reader.readAsDataURL(file);
     }
   };
+  
 
   const handleUpload = async (e) => {
     e.preventDefault();

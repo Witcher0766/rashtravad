@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useCreateUploadMutation, useGetUploadsQuery, useDeleteUploadMutation } from '../slices/uploadApiSlice';
-import imageCompression from 'browser-image-compression';
 import { FiUpload, FiTrash2, FiImage, FiType, FiAlignLeft, FiTag } from 'react-icons/fi';
 
 const AdminGroup = () => {
@@ -10,56 +9,45 @@ const AdminGroup = () => {
   const [preview, setPreview] = useState('');
   const [type, setType] = useState('team');
 
-  // 👇 dynamic fetching based on type
   const { data: uploads, isLoading, error, refetch } = useGetUploadsQuery();
   const [createUpload, { isLoading: uploading }] = useCreateUploadMutation();
-  const [deleteUpload] = useDeleteUploadMutation();
+  const [deleteUpload, { isLoading: deleting }] = useDeleteUploadMutation();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
+      reader.onloadend = () => {
+        setPreview(reader.result);  // Base64 preview
+      };
       reader.readAsDataURL(file);
     }
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!imageFile) return alert('Please select an image');
+    if (!preview) return alert('Please select an image');
 
     try {
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
+      const payload = {
+        heading,
+        description,
+        type,
+        image: preview,  // 👈 sending base64 string
       };
-      const compressedFile = await imageCompression(imageFile, options);
-      const compressedReader = new FileReader();
 
-      compressedReader.onloadend = async () => {
-        try {
-          await createUpload({
-            heading,
-            description,
-            image: compressedReader.result,
-            type, // 👈 important: type selected
-          }).unwrap();
-          setHeading('');
-          setDescription('');
-          setImageFile(null);
-          setPreview('');
-          refetch();
-        } catch (err) {
-          console.error('Upload failed:', err);
-          alert('Upload failed');
-        }
-      };
-      compressedReader.readAsDataURL(compressedFile);
+      console.log('Uploading payload:', payload);
+      await createUpload(payload).unwrap();
+
+      setHeading('');
+      setDescription('');
+      setImageFile(null);
+      setPreview('');
+      refetch();
     } catch (error) {
-      console.error('Image compression failed:', error);
-      alert('Image compression failed');
+      console.error('Upload failed:', error);
+      alert('Upload failed');
     }
   };
 
@@ -75,7 +63,6 @@ const AdminGroup = () => {
     }
   };
 
-  // 👇 filter uploads based on selected type
   const filteredUploads = uploads?.filter((upload) => upload.type === type);
 
   return (
@@ -98,9 +85,9 @@ const AdminGroup = () => {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
                 <FiUpload className="mr-2" /> Upload New Content
               </h3>
-              
+
               <form onSubmit={handleUpload} className="space-y-5">
-                {/* Heading Input */}
+                {/* Heading */}
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     <FiType className="mr-2" /> Heading (optional)
@@ -110,11 +97,11 @@ const AdminGroup = () => {
                     placeholder="e.g. Team Member Name"
                     value={heading}
                     onChange={(e) => setHeading(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
 
-                {/* Description Input */}
+                {/* Description */}
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     <FiAlignLeft className="mr-2" /> Description (optional)
@@ -124,11 +111,11 @@ const AdminGroup = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
 
-                {/* Type Selector */}
+                {/* Type */}
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     <FiTag className="mr-2" /> Type
@@ -136,7 +123,7 @@ const AdminGroup = () => {
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="team">Team</option>
                     <option value="event">Event</option>
@@ -145,7 +132,7 @@ const AdminGroup = () => {
                   </select>
                 </div>
 
-                {/* File Input */}
+                {/* Image */}
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     <FiImage className="mr-2" /> Image
@@ -177,9 +164,9 @@ const AdminGroup = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={uploading || !imageFile}
+                  disabled={uploading || !preview}
                   className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
-                    uploading || !imageFile
+                    uploading || !preview
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-blue-600 hover:bg-blue-700'
                   }`}
@@ -231,9 +218,9 @@ const AdminGroup = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredUploads.map((upload) => (
                     <div key={upload._id} className="relative group bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow">
-                      {upload.image && (
+                      {upload.imageUrl && (
                         <img
-                          src={upload.image}
+                          src={upload.imageUrl}  // 👈 Corrected
                           alt="Uploaded content"
                           className="h-48 w-full object-cover"
                         />
@@ -249,10 +236,15 @@ const AdminGroup = () => {
                           </div>
                           <button
                             onClick={() => handleDelete(upload._id)}
+                            disabled={deleting}
                             className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 dark:hover:bg-gray-600 transition-colors"
                             title="Delete"
                           >
-                            <FiTrash2 />
+                            {deleting ? (
+                              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-red-500"></div>
+                            ) : (
+                              <FiTrash2 />
+                            )}
                           </button>
                         </div>
                         {upload.description && (

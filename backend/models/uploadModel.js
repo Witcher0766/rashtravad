@@ -1,27 +1,17 @@
 import mongoose from "mongoose";
 
 const adminUploadSchema = mongoose.Schema({
-    heading: {
-        type: String,
-        required: false,
-        trim: true,
-    },
-    description: {
-        type: String,
-        required: false,
-        trim: true,
-    },
-    image: {
-        type: String, // You can use Buffer if storing the actual image or String for URL/path
-        required: true,
-    },
-    type: {
-        type: String,
-        enum: ['team', 'event', 'gallery', 'group'], // Enums ensure the type is restricted to specific values
-        required: true, // This is a required field to know which type of upload it is
-    },
+  heading: { type: String, trim: true },
+  description: { type: String, trim: true },
+  imageUrl: { type: String, required: true }, // Cloudinary URL
+  publicId: { type: String, required: true }, // Cloudinary public_id
+  type: { 
+    type: String, 
+    enum: ['team', 'event', 'gallery', 'group'],
+    required: true,
+  },
 }, {
-    timestamps: true, // Automatically add createdAt and updatedAt fields
+  timestamps: true,
 });
 
 const AdminUpload = mongoose.model("AdminUpload", adminUploadSchema);

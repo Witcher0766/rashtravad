@@ -5,22 +5,16 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Create a new image upload
     createUpload: builder.mutation({
-      query: (data) => ({
+      query: (formData) => ({
         url: `${UPLOADS_URL}`,
         method: "POST",
-        body: data,
+        body: formData,
+        formData: true, // Add this line to properly handle FormData
       }),
       invalidatesTags: ["Uploads"],
     }),
 
     // Get all uploaded items
-    // getUploads: builder.query({
-    //   query: () => ({
-    //     url: `${UPLOADS_URL}`,
-    //   }),
-    //   providesTags: ['Uploads'],
-    //   keepUnusedDataFor: 5,
-    // }),
     getUploads: builder.query({
       query: (type) => ({
         url: type ? `${UPLOADS_URL}?type=${type}` : `${UPLOADS_URL}`,
@@ -39,28 +33,21 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
 
     // Update a specific upload
     updateUpload: builder.mutation({
-      query: (data) => ({
-        url: `${UPLOADS_URL}/${data.id}`,
+      query: ({ id, formData }) => ({
+        url: `${UPLOADS_URL}/${id}`,
         method: "PUT",
-        body: data,
+        body: formData,
+        formData: true, // Add this line to properly handle FormData
       }),
       invalidatesTags: ["Uploads"],
     }),
 
     // Delete a specific upload by ID
     deleteUpload: builder.mutation({
-      query: (uploadId) => {
-        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-        const token = userInfo?.token;
-
-        return {
-          url: `${UPLOADS_URL}/${uploadId}`,
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-      },
+      query: (uploadId) => ({
+        url: `${UPLOADS_URL}/${uploadId}`,
+        method: "DELETE",
+      }),
       invalidatesTags: ["Uploads"],
     }),
   }),
@@ -71,5 +58,5 @@ export const {
   useGetUploadsQuery,
   useGetUploadByIdQuery,
   useUpdateUploadMutation,
-  useDeleteUploadMutation, // Export the delete mutation
+  useDeleteUploadMutation,
 } = uploadApiSlice;

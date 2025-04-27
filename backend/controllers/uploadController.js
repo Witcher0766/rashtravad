@@ -1,127 +1,127 @@
-import asyncHandler from '../middleware/asyncHandler.js';
-import AdminUpload from '../models/uploadModel.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import cloudinary from '../config/cloudinary.js';  // Cloudinary configuration
+import asyncHandler from '../middleware/asyncHandler.js';  // Async error handler middleware
+import AdminUpload from '../models/uploadModel.js';  // Admin Upload model
 
-// @desc    Upload new image
+// @desc    Upload new image to Cloudinary and save URL in MongoDB
+// @route   POST /api/uploads
+// @access  Private/Admin
+// @desc    Upload new image to Cloudinary and save URL in MongoDB
 // @route   POST /api/uploads
 // @access  Private/Admin
 const createUpload = asyncHandler(async (req, res) => {
-  const { heading, description, image, type } = req.body;
+  const { heading, description, type, image } = req.body;
 
   if (!image) {
     res.status(400);
-    throw new Error('Image field is required');
+    throw new Error('Image data is required');
   }
 
-  if (!type || !['team', 'event', 'gallery', 'group'].includes(type)) {
+  const validTypes = ['team', 'event', 'gallery', 'group'];
+  if (!type || !validTypes.includes(type)) {
     res.status(400);
-    throw new Error('Valid type (team, event, gallery, group) is required');
+    throw new Error(`Valid type is required. Accepted types are: ${validTypes.join(', ')}`);
   }
+
+  const result = await cloudinary.uploader.upload(image, {
+    folder: 'uploads/',
+  });
+  console.log('Cloudinary upload result:', result);
 
   const upload = await AdminUpload.create({
     heading,
     description,
-    image,
+    imageUrl: result.secure_url,
+    publicId: result.public_id,
     type,
   });
 
   res.status(201).json(upload);
 });
 
+
 // @desc    Get all uploads
-// @route   GET /api/uploads
-// @access  Public or Private based on requirement
-// const getUploads = asyncHandler(async (req, res) => {
-//   const uploads = await AdminUpload.find({});
-//   res.status(200).json(uploads);
-// });
-// @desc    Get uploads (optionally filtered by type)
-// @route   GET /api/uploads
-// @access  Public or Private based on requirement
 const getUploads = asyncHandler(async (req, res) => {
   const { type } = req.query;
   let filter = {};
-  if (type) {
-    filter.type = type; 
-  }
-  const uploads = await AdminUpload.find(filter);
-  res.status(200).json(uploads);
-});
 
+  if (type) {
+    filter.type = type;  // Filter uploads by type if provided
+  }
+
+  try {
+    const uploads = await AdminUpload.find(filter);  // Query MongoDB for uploads
+    res.status(200).json(uploads);
+  } catch (error) {
+    res.status(500);
+    throw new Error('Error fetching uploads');
+  }
+});
 
 // @desc    Get single upload by ID
-// @route   GET /api/uploads/:id
-// @access  Public or Private based on requirement
 const getUploadById = asyncHandler(async (req, res) => {
-  const upload = await AdminUpload.findById(req.params.id);
+  try {
+    const upload = await AdminUpload.findById(req.params.id);
 
-  if (upload) {
-    res.status(200).json(upload);
-  } else {
-    res.status(404);
-    throw new Error('Upload not found');
+    if (upload) {
+      res.status(200).json(upload);
+    } else {
+      res.status(404);
+      throw new Error('Upload not found');
+    }
+  } catch (error) {
+    res.status(500);
+    throw new Error('Error fetching upload by ID');
   }
 });
 
-// @desc    Update upload
-// @route   PUT /api/uploads/:id
-// @access  Private/Admin
+// @desc    Update an upload
 const updateUpload = asyncHandler(async (req, res) => {
-  const { heading, description, image, type } = req.body;
+  const { heading, description, type } = req.body;
 
-  const upload = await AdminUpload.findById(req.params.id);
+  try {
+    const upload = await AdminUpload.findById(req.params.id);
 
-  if (upload) {
+    if (!upload) {
+      res.status(404);
+      throw new Error('Upload not found');
+    }
+
+    // Update upload fields if provided
     upload.heading = heading || upload.heading;
     upload.description = description || upload.description;
-    upload.image = image || upload.image;
-    upload.type = type || upload.type;  // Update type if provided
+    upload.type = type || upload.type;
 
     const updatedUpload = await upload.save();
     res.status(200).json(updatedUpload);
-  } else {
-    res.status(404);
-    throw new Error('Upload not found');
+  } catch (error) {
+    res.status(500);
+    throw new Error('Error updating upload');
   }
 });
 
-// @desc    Delete upload
-// @route   DELETE /api/uploads/:id
-// @access  Private/Admin
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// @desc    Delete upload
-// @route   DELETE /api/uploads/:id
-// @access  Private/Admin
+// @desc    Delete an upload and its image from Cloudinary
 const deleteUpload = asyncHandler(async (req, res) => {
-  const upload = await AdminUpload.findById(req.params.id);
+  try {
+    const upload = await AdminUpload.findById(req.params.id);
 
-  if (!upload) {
-    res.status(404);
-    throw new Error('Upload not found');
-  }
-
-  // Assuming image path is stored in `upload.image`
-  const imagePath = path.join(__dirname, '..', upload.image);
-
-  // Delete the file if it exists
-  if (fs.existsSync(imagePath)) {
-    try {
-      await fs.promises.unlink(imagePath); // 👈 use fs.promises for better async/await
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      res.status(500);
-      throw new Error('Error deleting image file');
+    if (!upload) {
+      res.status(404);
+      throw new Error('Upload not found');
     }
+
+    // Delete the image from Cloudinary using the publicId stored in MongoDB
+    if (upload.publicId) {
+      await cloudinary.uploader.destroy(upload.publicId);
+    }
+
+    // Delete the upload document from MongoDB
+    await AdminUpload.deleteOne({ _id: upload._id });
+
+    res.status(200).json({ message: 'Upload deleted successfully' });
+  } catch (error) {
+    res.status(500);
+    throw new Error('Error deleting upload');
   }
-
-  // Delete the document from MongoDB
-  await AdminUpload.deleteOne({ _id: upload._id }); // 👈 FIXED
-
-  res.status(200).json({ message: 'Upload deleted successfully' });
 });
 
 export {

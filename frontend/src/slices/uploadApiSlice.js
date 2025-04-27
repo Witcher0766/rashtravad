@@ -1,5 +1,5 @@
-import { apiSlice } from './apiSlice';
-import { UPLOADS_URL } from '../constants';
+import { apiSlice } from "./apiSlice";
+import { UPLOADS_URL } from "../constants";
 
 export const uploadApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -7,18 +7,25 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
     createUpload: builder.mutation({
       query: (data) => ({
         url: `${UPLOADS_URL}`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['Uploads'],
+      invalidatesTags: ["Uploads"],
     }),
 
     // Get all uploaded items
+    // getUploads: builder.query({
+    //   query: () => ({
+    //     url: `${UPLOADS_URL}`,
+    //   }),
+    //   providesTags: ['Uploads'],
+    //   keepUnusedDataFor: 5,
+    // }),
     getUploads: builder.query({
-      query: () => ({
-        url: `${UPLOADS_URL}`,
+      query: (type) => ({
+        url: type ? `${UPLOADS_URL}?type=${type}` : `${UPLOADS_URL}`,
       }),
-      providesTags: ['Uploads'],
+      providesTags: ["Uploads"],
       keepUnusedDataFor: 5,
     }),
 
@@ -34,27 +41,27 @@ export const uploadApiSlice = apiSlice.injectEndpoints({
     updateUpload: builder.mutation({
       query: (data) => ({
         url: `${UPLOADS_URL}/${data.id}`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
       }),
-      invalidatesTags: ['Uploads'],
+      invalidatesTags: ["Uploads"],
     }),
 
     // Delete a specific upload by ID
     deleteUpload: builder.mutation({
       query: (uploadId) => {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const token = userInfo?.token;
 
         return {
           url: `${UPLOADS_URL}/${uploadId}`,
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         };
       },
-      invalidatesTags: ['Uploads'],
+      invalidatesTags: ["Uploads"],
     }),
   }),
 });
@@ -64,5 +71,5 @@ export const {
   useGetUploadsQuery,
   useGetUploadByIdQuery,
   useUpdateUploadMutation,
-  useDeleteUploadMutation,  // Export the delete mutation
+  useDeleteUploadMutation, // Export the delete mutation
 } = uploadApiSlice;

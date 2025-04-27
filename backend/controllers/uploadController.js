@@ -15,9 +15,9 @@ const createUpload = asyncHandler(async (req, res) => {
     throw new Error('Image field is required');
   }
 
-  if (!type || !['team', 'event', 'gallery'].includes(type)) {
+  if (!type || !['team', 'event', 'gallery', 'group'].includes(type)) {
     res.status(400);
-    throw new Error('Valid type (team, event, gallery) is required');
+    throw new Error('Valid type (team, event, gallery, group) is required');
   }
 
   const upload = await AdminUpload.create({
@@ -33,10 +33,23 @@ const createUpload = asyncHandler(async (req, res) => {
 // @desc    Get all uploads
 // @route   GET /api/uploads
 // @access  Public or Private based on requirement
+// const getUploads = asyncHandler(async (req, res) => {
+//   const uploads = await AdminUpload.find({});
+//   res.status(200).json(uploads);
+// });
+// @desc    Get uploads (optionally filtered by type)
+// @route   GET /api/uploads
+// @access  Public or Private based on requirement
 const getUploads = asyncHandler(async (req, res) => {
-  const uploads = await AdminUpload.find({});
+  const { type } = req.query;
+  let filter = {};
+  if (type) {
+    filter.type = type; 
+  }
+  const uploads = await AdminUpload.find(filter);
   res.status(200).json(uploads);
 });
+
 
 // @desc    Get single upload by ID
 // @route   GET /api/uploads/:id

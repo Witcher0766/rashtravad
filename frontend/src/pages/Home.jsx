@@ -3,6 +3,7 @@ import bgImage from "../assets/homepage_img.jpg";
 import person from "../assets/person.png";
 import Values from "./Values";
 import President from "./President";
+import Group from "./Group";
 
 const Home = () => {
   return (
@@ -36,7 +37,7 @@ const Home = () => {
             </div>
 
             {/* CTA Buttons */}
-            <div className="z-10 flex flex-col sm:flex-row justify-center sm:justify-start items-start sm:items-center gap-4 mt-8 sm:mt-0">
+            <div className="z-10 flex flex-col sm:flex-row justify-center sm:justify-end items-start sm:items-center gap-4 mt-8 sm:mt-0">
               <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full text-sm sm:text-base md:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
                 Watch Now
               </button>
@@ -57,8 +58,8 @@ const Home = () => {
 
       {/* Additional Section */}
       <Values />
-
       <President/>
+      <Group/>
     </>
   );
 };

@@ -10,6 +10,7 @@ const AdminGroup = () => {
   const [preview, setPreview] = useState('');
   const [type, setType] = useState('team');
 
+  // 👇 dynamic fetching based on type
   const { data: uploads, isLoading, error, refetch } = useGetUploadsQuery();
   const [createUpload, { isLoading: uploading }] = useCreateUploadMutation();
   const [deleteUpload] = useDeleteUploadMutation();
@@ -34,7 +35,6 @@ const AdminGroup = () => {
         maxWidthOrHeight: 800,
         useWebWorker: true,
       };
-      
       const compressedFile = await imageCompression(imageFile, options);
       const compressedReader = new FileReader();
 
@@ -44,13 +44,12 @@ const AdminGroup = () => {
             heading,
             description,
             image: compressedReader.result,
-            type,
+            type, // 👈 important: type selected
           }).unwrap();
           setHeading('');
           setDescription('');
           setImageFile(null);
           setPreview('');
-          setType('team');
           refetch();
         } catch (err) {
           console.error('Upload failed:', err);
@@ -76,6 +75,9 @@ const AdminGroup = () => {
     }
   };
 
+  // 👇 filter uploads based on selected type
+  const filteredUploads = uploads?.filter((upload) => upload.type === type);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main className="container mx-auto px-4 py-8">
@@ -85,7 +87,7 @@ const AdminGroup = () => {
             Admin Upload Panel
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Manage your team, events, and gallery content
+            Manage your team, events, group, and gallery content
           </p>
         </div>
 
@@ -126,10 +128,10 @@ const AdminGroup = () => {
                   />
                 </div>
 
-                {/* Type Selection */}
+                {/* Type Selector */}
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <FiTag className="mr-2" /> Content Type
+                    <FiTag className="mr-2" /> Type
                   </label>
                   <select
                     value={type}
@@ -139,6 +141,7 @@ const AdminGroup = () => {
                     <option value="team">Team</option>
                     <option value="event">Event</option>
                     <option value="gallery">Gallery</option>
+                    <option value="group">Group</option>
                   </select>
                 </div>
 
@@ -190,8 +193,26 @@ const AdminGroup = () => {
           {/* Uploaded Items */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+
+              {/* Filter Buttons */}
+              <div className="flex justify-center gap-4 mb-8">
+                {['team', 'event', 'gallery', 'group'].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setType(t)}
+                    className={`px-4 py-2 rounded-full font-medium ${
+                      type === t
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                  </button>
+                ))}
+              </div>
+
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Your Uploaded Content
+                {type.charAt(0).toUpperCase() + type.slice(1)} Uploads
               </h3>
 
               {isLoading ? (
@@ -202,13 +223,13 @@ const AdminGroup = () => {
                 <div className="text-center py-10 text-red-600 dark:text-red-400">
                   Error loading content. Please try again.
                 </div>
-              ) : uploads?.length === 0 ? (
+              ) : filteredUploads?.length === 0 ? (
                 <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-                  No content uploaded yet. Start by uploading something!
+                  No {type} content uploaded yet.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {uploads?.map((upload) => (
+                  {filteredUploads.map((upload) => (
                     <div key={upload._id} className="relative group bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow">
                       {upload.image && (
                         <img
@@ -225,9 +246,6 @@ const AdminGroup = () => {
                                 {upload.heading}
                               </h4>
                             )}
-                            <span className="inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                              {upload.type}
-                            </span>
                           </div>
                           <button
                             onClick={() => handleDelete(upload._id)}

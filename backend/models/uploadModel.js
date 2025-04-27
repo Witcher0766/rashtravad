@@ -17,7 +17,7 @@ const adminUploadSchema = mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['team', 'event', 'gallery'], // Enums ensure the type is restricted to specific values
+        enum: ['team', 'event', 'gallery', 'group'], // Enums ensure the type is restricted to specific values
         required: true, // This is a required field to know which type of upload it is
     },
 }, {

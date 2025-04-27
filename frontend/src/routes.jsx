@@ -6,10 +6,6 @@ import NotFound from "./pages/NotFound";
 import RegisterPage from "./pages/RegisterPage";
 import AdminDashboard from "./adminPages/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
-import AdminEvents from "./adminPages/AdminEvents";
-import AdminGallery from "./adminPages/AdminGallery";
-import AdminTeam from "./adminPages/AdminTeam";
-import AdminPresident from "./adminPages/AdminPresident";
 import AdminGroup from "./adminPages/AdminGroup";
 import AdminLayout from "./components/AdminLayout"; // <<< new import
 

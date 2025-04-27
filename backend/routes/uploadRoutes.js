@@ -4,24 +4,24 @@ import {
   getUploads,
   getUploadById,
   updateUpload,
-  deleteUpload,  // Import the deleteUpload controller
+  deleteUpload,
 } from '../controllers/uploadController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// @route   POST /api/uploads      → Create a new image upload
-// @route   GET /api/uploads       → Get all uploads
+// @route   POST /api/uploads      → Create a new image upload (protected)
+// @route   GET /api/uploads       → Get all uploads (public)
 router.route('/')
   .post(protect, admin, createUpload)
-  .get(protect, admin, getUploads);
+  .get(getUploads);
 
-// @route   GET /api/uploads/:id   → Get a specific upload
-// @route   PUT /api/uploads/:id   → Update a specific upload
-// @route   DELETE /api/uploads/:id → Delete a specific upload
+// @route   GET /api/uploads/:id   → Get a specific upload (protected)
+// @route   PUT /api/uploads/:id   → Update a specific upload (protected)
+// @route   DELETE /api/uploads/:id → Delete a specific upload (protected)
 router.route('/:id')
   .get(protect, admin, getUploadById)
   .put(protect, admin, updateUpload)
-  .delete(protect, admin, deleteUpload);  // Add DELETE route for deleting an upload
+  .delete(protect, admin, deleteUpload);
 
 export default router;

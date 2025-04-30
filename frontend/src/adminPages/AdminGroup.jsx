@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
-import { useCreateUploadMutation, useGetUploadsQuery, useDeleteUploadMutation } from '../slices/uploadApiSlice';
-import { FiUpload, FiTrash2, FiImage, FiType, FiAlignLeft, FiTag } from 'react-icons/fi';
+import {
+  useCreateUploadMutation,
+  useGetUploadsQuery,
+  useDeleteUploadMutation,
+} from '../slices/uploadApiSlice';
+import {
+  FiUpload,
+  FiTrash2,
+  FiImage,
+  FiType,
+  FiAlignLeft,
+  FiTag,
+} from 'react-icons/fi';
 
 const AdminGroup = () => {
   const [heading, setHeading] = useState('');
@@ -13,8 +24,6 @@ const AdminGroup = () => {
   const [createUpload, { isLoading: uploading }] = useCreateUploadMutation();
   const [deleteUpload, { isLoading: deleting }] = useDeleteUploadMutation();
 
-  console.log(imageFile);
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -23,11 +32,11 @@ const AdminGroup = () => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const maxWidth = 800; 
+          const maxWidth = 800;
           const maxHeight = 800;
           let width = img.width;
           let height = img.height;
-  
+
           if (width > height) {
             if (width > maxWidth) {
               height = Math.round((height * maxWidth) / width);
@@ -39,16 +48,12 @@ const AdminGroup = () => {
               height = maxHeight;
             }
           }
-  
+
           canvas.width = width;
           canvas.height = height;
-  
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-  
-          // Compress the image
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 👈 Quality 0.7 (you can adjust)
-  
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
           setPreview(compressedDataUrl);
         };
         img.src = reader.result;
@@ -56,7 +61,6 @@ const AdminGroup = () => {
       reader.readAsDataURL(file);
     }
   };
-  
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -67,12 +71,10 @@ const AdminGroup = () => {
         heading,
         description,
         type,
-        image: preview,  // 👈 sending base64 string
+        image: preview,
       };
 
-      console.log('Uploading payload:', payload);
       await createUpload(payload).unwrap();
-
       setHeading('');
       setDescription('');
       setImageFile(null);
@@ -100,8 +102,7 @@ const AdminGroup = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main className="container mx-auto px-4 py-8">
-        {/* Title */}
+      <main className="container mx-auto px-4 md:px-8 py-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
             Admin Upload Panel
@@ -114,7 +115,7 @@ const AdminGroup = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Upload Form */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md sticky top-6">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md sticky lg:top-6">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
                 <FiUpload className="mr-2" /> Upload New Content
               </h3>
@@ -166,30 +167,34 @@ const AdminGroup = () => {
                   </select>
                 </div>
 
-                {/* Image */}
+                {/* Image Upload */}
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     <FiImage className="mr-2" /> Image
                   </label>
                   <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col w-full border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4">
+                    <label className="flex flex-col w-full border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 transition-colors p-4 text-center items-center justify-center">
+                      <div className="flex flex-col items-center justify-center">
                         {preview ? (
-                          <img src={preview} alt="Preview" className="h-32 object-contain mb-2 rounded" />
+                          <img
+                            src={preview}
+                            alt="Preview"
+                            className="w-full max-h-40 object-contain mb-2 rounded"
+                          />
                         ) : (
                           <>
                             <FiImage className="w-8 h-8 text-gray-400" />
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                               Click to upload or drag and drop
                             </p>
                           </>
                         )}
                       </div>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleImageChange} 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
                       />
                     </label>
                   </div>
@@ -214,9 +219,8 @@ const AdminGroup = () => {
           {/* Uploaded Items */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-
               {/* Filter Buttons */}
-              <div className="flex justify-center gap-4 mb-8">
+              <div className="flex flex-wrap justify-center gap-2 mb-8">
                 {['team', 'event', 'gallery', 'group', 'statePresident'].map((t) => (
                   <button
                     key={t}
@@ -249,12 +253,15 @@ const AdminGroup = () => {
                   No {type} content uploaded yet.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {filteredUploads.map((upload) => (
-                    <div key={upload._id} className="relative group bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow">
+                    <div
+                      key={upload._id}
+                      className="relative group bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow"
+                    >
                       {upload.imageUrl && (
                         <img
-                          src={upload.imageUrl}  // 👈 Corrected
+                          src={upload.imageUrl}
                           alt="Uploaded content"
                           className="h-48 w-full object-cover"
                         />

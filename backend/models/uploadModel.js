@@ -7,7 +7,7 @@ const adminUploadSchema = mongoose.Schema({
   publicId: { type: String, required: true }, // Cloudinary public_id
   type: { 
     type: String, 
-    enum: ['team', 'event', 'gallery', 'group'],
+    enum: ['team', 'event', 'gallery', 'group', 'statePresident'],
     required: true,
   },
 }, {

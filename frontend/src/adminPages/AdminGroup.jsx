@@ -13,6 +13,8 @@ const AdminGroup = () => {
   const [createUpload, { isLoading: uploading }] = useCreateUploadMutation();
   const [deleteUpload, { isLoading: deleting }] = useDeleteUploadMutation();
 
+  console.log(imageFile);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -21,12 +23,11 @@ const AdminGroup = () => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const maxWidth = 800; // 👈 Resize max width (you can adjust)
-          const maxHeight = 800; // 👈 Resize max height (you can adjust)
+          const maxWidth = 800; 
+          const maxHeight = 800;
           let width = img.width;
           let height = img.height;
   
-          // Maintain aspect ratio
           if (width > height) {
             if (width > maxWidth) {
               height = Math.round((height * maxWidth) / width);
@@ -161,6 +162,7 @@ const AdminGroup = () => {
                     <option value="event">Event</option>
                     <option value="gallery">Gallery</option>
                     <option value="group">Group</option>
+                    <option value="statePresident">StatePresident</option>
                   </select>
                 </div>
 
@@ -215,7 +217,7 @@ const AdminGroup = () => {
 
               {/* Filter Buttons */}
               <div className="flex justify-center gap-4 mb-8">
-                {['team', 'event', 'gallery', 'group'].map((t) => (
+                {['team', 'event', 'gallery', 'group', 'statePresident'].map((t) => (
                   <button
                     key={t}
                     onClick={() => setType(t)}

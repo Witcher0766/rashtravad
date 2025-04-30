@@ -14,7 +14,7 @@ const createUpload = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Image data is required');
   }
-  const validTypes = ['team', 'event', 'gallery', 'group'];
+  const validTypes = ['team', 'event', 'gallery', 'group', 'statePresident'];
   if (!type || !validTypes.includes(type)) {
     res.status(400);
     throw new Error(`Valid type is required. Accepted types are: ${validTypes.join(', ')}`);
